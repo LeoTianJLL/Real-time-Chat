@@ -21,15 +21,44 @@
 */
 
 import UIKit
+import Firebase
+
 class LoginViewController: UIViewController {
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-  }
+    var ref:Firebase!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        ref = Firebase(url: "https://emily-realtime-chat.firebaseio.com/")
+        
+    }
 
-  @IBAction func loginDidTouch(sender: AnyObject) {
-
-  }
+    @IBAction func loginDidTouch(sender: AnyObject) {
+        
+        ref.authAnonymouslyWithCompletionBlock{ (error, authData) in
+            
+            if error != nil {
+                
+                print(error.description)
+                return
+            }
+            
+            self.performSegueWithIdentifier("LoginToChat", sender: nil)
+        }
+        
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        super.prepareForSegue(segue, sender: sender)
+        
+        let navVc = segue.destinationViewController as! UINavigationController // 1 Retrieve the destination view controller from segue and cast it to a UINavigationController.
+        let chatVc = navVc.viewControllers.first as! ChatViewController // 2 Cast the first view controller of the UINavigationController as ChatViewController.
+        
+        chatVc.senderId = ref.authData.uid // 3 Assign the local user’s ID to chatVc.senderId; this is the local ID that JSQMessagesViewController uses to coordinate messages.
+        chatVc.senderDisplayName = "" // 4 Make chatVc.senderDisplayName an empty string, since this is an anonymous chat room
+    }
+    
   
 }
 
